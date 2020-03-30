@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PointSET {
-    private SET<Point2D> set = new SET<>();
+    private final SET<Point2D> set = new SET<>();
     public void insert(Point2D p){
         set.add(p);
     }

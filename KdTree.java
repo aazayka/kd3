@@ -5,7 +5,6 @@ import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class KdTree {
@@ -14,7 +13,7 @@ public class KdTree {
         Node left;
         Node right;
         Point2D val;
-        public boolean equals(Point2D p){
+        public boolean equalToPoint(Point2D p){
             return val.equals(p);
         }
         public double x() {
@@ -45,7 +44,7 @@ public class KdTree {
         }
 
         public double dist(Point2D p) {
-            return Math.pow(x() - p.x(), 2) + Math.pow(y() - p.y(), 2);
+            return val.distanceSquaredTo(p);
         }
     }
 
@@ -66,34 +65,31 @@ public class KdTree {
 
     public void insert(Point2D p) {
         if (p == null) throw new IllegalArgumentException("null");
-        //System.out.println("Inserting " + p.toString() + " for root " + (root == null ? "empty " : root.val.toString()));
+        System.out.println("Inserting " + p.toString() + " for root " + (root == null ? "empty " : root.val.toString()));
         root = insertRec(root, p, 0);
-        //System.out.println("**************************");
+        System.out.println("**************************");
     }
 
     private Node insertRec(Node n, Point2D p, int level) {
         if (n == null) {
             size++;
-            //System.out.println("node " + p.toString() + " added. Size: " + size);
+            System.out.println("node " + p.toString() + " added. Size: " + size);
             return new Node(p);
         }
-        if (n.equals(p)) {
-            //System.out.println("node p " + p.toString() + " equal to current");
+        if (n.equalToPoint(p)) {
+            System.out.println("node p " + p.toString() + " equal to current");
             return n;
         }
 
         if   (level % 2 == 0 && p.x() < n.x()
-                || (level % 2 == 1 && p.y() < n.y())) {
-            //System.out.println("go left on level " + level);
+                || (level % 2 != 0 && p.y() < n.y())) {
+            System.out.println("go left on level " + level);
             n.left = insertRec(n.left, p, level + 1);
         }
         else if ((level % 2 == 0 && p.x() >= n.x())
-                || (level % 2 == 1 && p.y() >= n.y())) {
-            //System.out.println("go right on level " + level);
+                || (level % 2 != 0 && p.y() >= n.y())) {
+            System.out.println("go right on level " + level);
             n.right = insertRec(n.right, p, level + 1);
-        }
-        else {
-            //System.out.println("unexpected on level " + level);
         }
         return n;
     }
@@ -105,7 +101,7 @@ public class KdTree {
 
     private Node getPosition(Node n, Point2D p, int level) {
         if (n == null) return null;
-        if (n.equals(p)) return n;
+        if (n.equalToPoint(p)) return n;
         if   (level % 2 == 0 && p.x() < n.x()
           || (level % 2 != 0 && p.y() < n.y()))
             return getPosition(n.left, p, level + 1);
@@ -147,62 +143,72 @@ public class KdTree {
 
     private void rangeRec(RectHV rect, Node n, List<Point2D> res, boolean checkX) {
         if (n == null) {
-            //System.out.println("oooppps");
+            System.out.println("oooppps");
             return;
         }
-        //System.out.println("check node " + n.val.toString() + " in rect " + rect);
+        System.out.println("check node " + n.val.toString() + " in rect " + rect);
         if (rect.contains(n.val)) res.add(n.val);
 
         if (checkX && rect.xmax() >= n.x()) {
-            //System.out.println("x-right");
+            System.out.println("x-right");
             rangeRec(rect, n.right, res, !checkX); }
         if (checkX && rect.xmin() < n.x()) {
-            //System.out.println("x-left");
+            System.out.println("x-left");
             rangeRec(rect, n.left, res, !checkX);
         }
         if (!checkX && rect.ymax() >= n.y()) {
-            //System.out.println("y-right");
+            System.out.println("y-right");
             rangeRec(rect, n.right, res, !checkX);
         }
         if (!checkX && rect.ymin() < n.y()) {
-            //System.out.println("y-left");
+            System.out.println("y-left");
             rangeRec(rect, n.left, res, !checkX);
         }
     }
 
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException("null");
+        if (isEmpty()) return null;
         return nearestRec(p, root, true, new Nearest(root, root.dist(p)), new RectHV(0,0,1,1)).minNode.val;
     }            // a nearest neighbor in the set to point p; null if the set is empty
 
+    private int iter=1;
     private Nearest nearestRec(Point2D p, Node n, boolean checkX, Nearest nearest, RectHV boundary) {
         if (n == null) return nearest;
         double dist = n.dist(p);
+        System.out.println("+++++++++++++++");
+        System.out.println(iter++ + " look " + n.val.toString() + "; checkX=" + checkX + "; nearest point=" + nearest.minNode.val
+                                   + "; nearest dist=" + nearest.minDist + "; boundary=" + boundary);
         if (dist < nearest.minDist) {
+            System.out.println("Skip iterations");
             nearest.minDist = dist;
             nearest.minNode = n;
         }
 
-        if (nearest.minDist < boundary.distanceTo(p)) {
+        if (nearest.minDist < boundary.distanceSquaredTo(p)) {
             return nearest;
         }
 
         if (checkX) {
             if (p.x() < n.x()) {
+                System.out.println("Horisontal left from point " + n.val);
                 nearest = nearestRec(p, n.left, !checkX, nearest, getBoundaryRect(boundary, n, !checkX, true));
                 nearest = nearestRec(p, n.right, !checkX, nearest, getBoundaryRect(boundary, n, !checkX, false));
             }
             else {
+                System.out.println("Horisontal right from point " + n.val);
                 nearest = nearestRec(p, n.right, !checkX, nearest, getBoundaryRect(boundary, n, !checkX, false));
                 nearest = nearestRec(p, n.left, !checkX, nearest, getBoundaryRect(boundary, n, !checkX, true));
             }
         }
         else {
             if (p.y() < n.y()) {
+                System.out.println("Vertical left from point " + n.val);
                 nearest = nearestRec(p, n.left, !checkX, nearest, getBoundaryRect(boundary, n, !checkX, true));
                 nearest = nearestRec(p, n.right, !checkX, nearest, getBoundaryRect(boundary, n, !checkX, false));
             }
             else {
+                System.out.println("Vertical right from point " + n.val);
                 nearest = nearestRec(p, n.right, !checkX, nearest, getBoundaryRect(boundary, n, !checkX, false));
                 nearest = nearestRec(p, n.left, !checkX, nearest, getBoundaryRect(boundary, n, !checkX, true));
             }
@@ -240,7 +246,7 @@ public class KdTree {
         System.out.println("false=" + tr.contains(new Point2D(0, 0)));
 
         RectHV rect = new RectHV(-0.052734375, 0.2578125, 0.580078125, 0.419921875);
-        In in = new In("circle10.txt");
+        In in = new In("fail1.txt");
         KdTree kdtree = new KdTree();
         while (!in.isEmpty()) {
             double x = in.readDouble();
@@ -248,10 +254,7 @@ public class KdTree {
             Point2D p = new Point2D(x, y);
             kdtree.insert(p);
         }
-        Iterator<Point2D> it = kdtree.range(rect).iterator();
-        while (it.hasNext()){
-            System.out.println(it.next());
-        }
+        System.out.println(kdtree.nearest(new Point2D(0.1875, 1.0)));
 
     }
 }
