@@ -6,13 +6,26 @@ import edu.princeton.cs.algs4.StdDraw;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PointSET extends SET<Point2D> {
+public class PointSET {
+    private SET<Point2D> set = new SET<>();
     public void insert(Point2D p){
-        add(p);
+        set.add(p);
+    }
+
+    public int size() {
+        return set.size();
+    }
+
+    public boolean contains(Point2D p) {
+        return set.contains(p);
+    }
+
+    public boolean isEmpty() {
+        return set.size() == 0;
     }
 
     public void draw() {
-        for (Point2D p: this
+        for (Point2D p: set
              ) {
             StdDraw.point(p.x(), p.y());
         }
@@ -21,7 +34,7 @@ public class PointSET extends SET<Point2D> {
     public Iterable<Point2D> range(RectHV rect) {
         if (rect == null) throw new IllegalArgumentException("null arg");
         List<Point2D> res = new ArrayList<>();
-        for (Point2D p: this) {
+        for (Point2D p: set) {
             if (rect.contains(p)) res.add(p);
         }
         return res;
@@ -31,7 +44,7 @@ public class PointSET extends SET<Point2D> {
         if (p == null) throw new IllegalArgumentException("null arg");
         double minDist = Double.MAX_VALUE;
         Point2D res = null;
-        for (Point2D curr: this) {
+        for (Point2D curr: set) {
             double dist = p.distanceSquaredTo(curr);
             if (dist < minDist) {
                 minDist = dist;
@@ -45,12 +58,12 @@ public class PointSET extends SET<Point2D> {
     public static void main(String[] args) {
         PointSET ps = new PointSET();
         System.out.println("0=" + ps.size());
-        ps.add(new Point2D(1,1));
-        ps.add(new Point2D(1,1));
+        ps.insert(new Point2D(1,1));
+        ps.insert(new Point2D(1,1));
         System.out.println("1=" + ps.size());
-        ps.add(new Point2D(0, 0));
+        ps.insert(new Point2D(0, 0));
         System.out.println("(0,0) = " + ps.nearest(new Point2D(0.3, 0)));
-        ps.add(new Point2D(0.3, 1.0));
+        ps.insert(new Point2D(0.3, 1.0));
         System.out.println("0.3, 1");
         for (Point2D p : ps.range(new RectHV(0.1, 0.1, 0.4, 1))) {
             System.out.println(p);

@@ -49,8 +49,8 @@ public class KdTree {
         }
     }
 
-    Node root;
-    int size;
+    private Node root;
+    private int size;
 
     public KdTree() {
 
@@ -66,34 +66,34 @@ public class KdTree {
 
     public void insert(Point2D p) {
         if (p == null) throw new IllegalArgumentException("null");
-        System.out.println("Inserting " + p.toString() + " for root " + (root == null ? "empty " : root.val.toString()));
+        //System.out.println("Inserting " + p.toString() + " for root " + (root == null ? "empty " : root.val.toString()));
         root = insertRec(root, p, 0);
-        System.out.println("**************************");
+        //System.out.println("**************************");
     }
 
     private Node insertRec(Node n, Point2D p, int level) {
         if (n == null) {
             size++;
-            System.out.println("node " + p.toString() + " added. Size: " + size);
+            //System.out.println("node " + p.toString() + " added. Size: " + size);
             return new Node(p);
         }
         if (n.equals(p)) {
-            System.out.println("node p " + p.toString() + " equal to current");
+            //System.out.println("node p " + p.toString() + " equal to current");
             return n;
         }
 
         if   (level % 2 == 0 && p.x() < n.x()
                 || (level % 2 == 1 && p.y() < n.y())) {
-            System.out.println("go left on level " + level);
+            //System.out.println("go left on level " + level);
             n.left = insertRec(n.left, p, level + 1);
         }
         else if ((level % 2 == 0 && p.x() >= n.x())
                 || (level % 2 == 1 && p.y() >= n.y())) {
-            System.out.println("go right on level " + level);
+            //System.out.println("go right on level " + level);
             n.right = insertRec(n.right, p, level + 1);
         }
         else {
-            System.out.println("unexpected on level " + level);
+            //System.out.println("unexpected on level " + level);
         }
         return n;
     }
@@ -103,17 +103,14 @@ public class KdTree {
         return getPosition(root, p, 0) != null;
     }
 
-    public Node getRoot() {
-        return root;
-    }
     private Node getPosition(Node n, Point2D p, int level) {
         if (n == null) return null;
         if (n.equals(p)) return n;
         if   (level % 2 == 0 && p.x() < n.x()
-          || (level % 2 == 1 && p.y() < n.y()))
+          || (level % 2 != 0 && p.y() < n.y()))
             return getPosition(n.left, p, level + 1);
         else if ((level % 2 == 0 && p.x() >= n.x())
-              || (level % 2 == 1 && p.y() >= n.y()))
+              || (level % 2 != 0 && p.y() >= n.y()))
             return getPosition(n.right, p, level + 1);
         else return n;
     }
@@ -150,25 +147,25 @@ public class KdTree {
 
     private void rangeRec(RectHV rect, Node n, List<Point2D> res, boolean checkX) {
         if (n == null) {
-            System.out.println("oooppps");
+            //System.out.println("oooppps");
             return;
         }
-        System.out.println("check node " + n.val.toString() + " in rect " + rect);
+        //System.out.println("check node " + n.val.toString() + " in rect " + rect);
         if (rect.contains(n.val)) res.add(n.val);
 
         if (checkX && rect.xmax() >= n.x()) {
-            System.out.println("x-right");
+            //System.out.println("x-right");
             rangeRec(rect, n.right, res, !checkX); }
         if (checkX && rect.xmin() < n.x()) {
-            System.out.println("x-left");
+            //System.out.println("x-left");
             rangeRec(rect, n.left, res, !checkX);
         }
         if (!checkX && rect.ymax() >= n.y()) {
-            System.out.println("y-right");
+            //System.out.println("y-right");
             rangeRec(rect, n.right, res, !checkX);
         }
         if (!checkX && rect.ymin() < n.y()) {
-            System.out.println("y-left");
+            //System.out.println("y-left");
             rangeRec(rect, n.left, res, !checkX);
         }
     }
